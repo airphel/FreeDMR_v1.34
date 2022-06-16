@@ -654,12 +654,12 @@ def threadAlias():
     logger.debug('(ALIAS) starting alias thread')
     reactor.callInThread(aliasb)
 
-def setAlias(_peer_ids,_subscriber_ids, _talkgroup_ids, _local_subscriber_ids, _server_ids):
-    peer_ids, subscriber_ids, talkgroup_ids,local_subscriber_ids,server_ids = _peer_ids, _subscriber_ids, _talkgroup_ids, _local_subscriber_ids,_server_ids
+def setAlias(_peer_ids,_subscriber_ids, _talkgroup_ids, _local_subscriber_ids):
+    peer_ids, subscriber_ids, talkgroup_ids,local_subscriber_ids = _peer_ids, _subscriber_ids, _talkgroup_ids, _local_subscriber_ids
     
 def aliasb():
-    _peer_ids, _subscriber_ids, _talkgroup_ids, _local_subscriber_ids, _server_ids = mk_aliases(CONFIG)
-    reactor.callFromThread(setAlias,_peer_ids, _subscriber_ids, _talkgroup_ids, _local_subscriber_ids, _server_ids)
+    _peer_ids, _subscriber_ids, _talkgroup_ids, _local_subscriber_ids = mk_aliases(CONFIG)
+    reactor.callFromThread(setAlias,_peer_ids, _subscriber_ids, _talkgroup_ids, _local_subscriber_ids)
 
 def ident():
     for system in systems:
@@ -680,7 +680,7 @@ def ident():
             _slot  = systems[system].STATUS[2]
             #If slot is idle for RX and TX
             #print("RX:"+str(_slot['RX_TYPE'])+" TX:"+str(_slot['TX_TYPE'])+" TIME:"+str(time() - _slot['TX_TIME']))
-            if (_slot['RX_TYPE'] == HBPF_SLT_VTERM) and (_slot['TX_TYPE'] == HBPF_SLT_VTERM) and (time() - _slot['TX_TIME'] > 30 and time() - _slot['RX_TIME'] > 30):
+            if (_slot['RX_TYPE'] == HBPF_SLT_VTERM) and (_slot['TX_TYPE'] == HBPF_SLT_VTERM) and (time() - _slot['TX_TIME'] > CONFIG['SYSTEMS'][system]['GROUP_HANGTIME']):
                 #_stream_id = hex_str_4(1234567)
                 logger.info('(%s) System idle. Sending voice ident',system)
                 _say = [words[_lang]['silence']]
@@ -713,8 +713,7 @@ def ident():
                 #_say.append(AMBEobj.readSingleFile('alpha.ambe'))
                 _all_call = bytes_3(16777215)
                 _source_id= bytes_3(5000)
-                _peer_id = bytes_4(CONFIG['GLOBAL']['SERVER_ID'])
-                speech = pkt_gen(_source_id, _all_call, _peer_id, 1, _say)
+                speech = pkt_gen(_source_id, _all_call, bytes_4(16777215), 1, _say)
 
                 sleep(1)
                 _slot  = systems[system].STATUS[2]
@@ -784,7 +783,7 @@ def options_config():
                             _options['TS1_STATIC'] = _options['TS1_STATIC'] + ',' + _options.pop('TS1_8')
                         if 'TS1_9' in _options:
                             _options['TS1_STATIC'] = _options['TS1_STATIC'] + ',' + _options.pop('TS1_9')
-                    if 'TS2_1' in _options:
+                    if 'TS2_2' in _options:
                         _options['TS2_STATIC'] = _options.pop('TS2_1')
                         if 'TS2_2' in _options:
                             _options['TS2_STATIC'] = _options['TS2_STATIC'] + ',' + _options.pop('TS2_2')
@@ -2568,7 +2567,7 @@ class routerHBP(HBSYSTEM):
             #Timeout
             if self.STATUS[_slot]['RX_START'] + 180 < pkt_time:
                 if 'LOOPLOG' not in self.STATUS[_slot] or not self.STATUS[_slot]['LOOPLOG']: 
-                    logger.info("(%s) HBP *SOURCE TIMEOUT* STREAM ID: %s, TG: %s, TS: %s, IGNORE THIS SOURCE",self._system, int_id(_stream_id), int_id(_dst_id),_slot)
+                    logger.info("(%s) HBP *SOURCE TIMEOUT* STREAM ID: %s, TG: %s, TS: %s, IGNORE THIS SOURCE",self._system, int_id(_stream_id), int_id(_dst_id),_sysslot)
                     self.STATUS[_slot]['LOOPLOG'] = True
                 self.STATUS[_slot]['LAST'] = pkt_time
                 return
@@ -2864,7 +2863,7 @@ if __name__ == '__main__':
         signal.signal(sig, sig_handler)
 
     # Create the name-number mapping dictionaries
-    peer_ids, subscriber_ids, talkgroup_ids, local_subscriber_ids, server_ids = mk_aliases(CONFIG)
+    peer_ids, subscriber_ids, talkgroup_ids, local_subscriber_ids = mk_aliases(CONFIG)
     
     #Add special IDs to DB
     subscriber_ids[900999] = 'D-APRS'
@@ -2873,7 +2872,6 @@ if __name__ == '__main__':
     CONFIG['_SUB_IDS'] = subscriber_ids
     CONFIG['_PEER_IDS'] = peer_ids
     CONFIG['_LOCAL_SUBSCRIBER_IDS'] = local_subscriber_ids
-    CONFIG['_SERVER_IDS'] = server_ids
     
     
     

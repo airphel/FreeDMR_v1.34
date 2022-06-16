@@ -147,8 +147,7 @@ def build_config(_config_file):
                     'ALLOW_NULL_PASSPHRASE': config.getboolean(section, 'ALLOW_NULL_PASSPHRASE'),
                     'ANNOUNCEMENT_LANGUAGES': config.get(section, 'ANNOUNCEMENT_LANGUAGES'),
                     'SERVER_ID': config.getint(section, 'SERVER_ID').to_bytes(4, 'big'),
-                    'DATA_GATEWAY': config.getboolean(section, 'DATA_GATEWAY'),
-                    'VALIDATE_SERVER_IDS': config.getboolean(section, 'VALIDATE_SERVER_IDS')
+                    'DATA_GATEWAY': config.getboolean(section, 'DATA_GATEWAY')
                     
                 })
                 if not CONFIG['GLOBAL']['ANNOUNCEMENT_LANGUAGES']:
@@ -184,10 +183,7 @@ def build_config(_config_file):
                     'TGID_URL': config.get(section, 'TGID_URL'),
                     'STALE_TIME': config.getint(section, 'STALE_DAYS') * 86400,
                     'SUB_MAP_FILE': config.get(section, 'SUB_MAP_FILE'),
-                    'LOCAL_SUBSCRIBER_FILE': config.get(section, 'LOCAL_SUBSCRIBER_FILE'),
-                    'SERVER_ID_URL': config.get(section, 'SERVER_ID_URL'),
-                    'SERVER_ID_FILE': config.get(section, 'SERVER_ID_FILE')
-                    
+                    'LOCAL_SUBSCRIBER_FILE': config.get(section, 'LOCAL_SUBSCRIBER_FILE')
                 })
                 
             elif section == 'MYSQL':

@@ -75,17 +75,12 @@ class reportClient(NetstringReceiver):
             event['duration'] = datalist[9]
         
         
-        #self.reactor.callInThread(self.send_mysql,event)
-        self.send_mysql(event)
+        self.reactor.callInThread(self.send_mysql,event)
         
     def send_mysql(self,event):
 
         while not self.db.is_connected():
-            try:
-                self.db.reconnect()
-            except mysql.connector.Error as err:
-                print('(MYSQL) error on reconnect: {}'.format(err))    
-                
+            self.db.reconnect()
         print("{} {} {} {} {} {} {} {} {}".format(event['type'],event['event'], event['trx'],event['system'],event['streamid'],event['peerid'],event['subid'],event['slot'],event['dstid'],event['duration']))
         _cursor = self.db.cursor()
         try:
@@ -154,8 +149,6 @@ if __name__ == '__main__':
             user=sys.argv[4],
             password=sys.argv[5],
             database=sys.argv[6],
-            #pool_name = "master",
-            #pool_size = 5
         )
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
